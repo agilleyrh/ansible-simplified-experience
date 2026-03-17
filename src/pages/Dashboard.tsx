@@ -32,6 +32,7 @@ import {
 import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
 import { ExternalLinkAltIcon, CheckCircleIcon, ExclamationCircleIcon, SyncAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
 import { defaultConfig } from './Settings';
+import axios from 'axios';
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -127,14 +128,70 @@ const Dashboard = () => {
   const [lastRefreshed, setLastRefreshed] = useState(new Date().toLocaleTimeString());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchData = useCallback(() => {
+  // Live Data State for AAP
+  const [aapJobsStatus, setAapJobsStatus] = useState(aapJobStatusData);
+  const [aapHosts, setAapHosts] = useState(aapHostData);
+  const [aapRecentJobs, setAapRecentJobs] = useState(recentJobs);
+  const [aapTotalJobs, setAapTotalJobs] = useState(480);
+
+  const fetchData = useCallback(async () => {
     setIsRefreshing(true);
-    // Simulate API calls
-    setTimeout(() => {
-      setLastRefreshed(new Date().toLocaleTimeString());
-      setIsRefreshing(false);
-    }, 800);
-  }, []);
+    
+    // Fetch live AAP data if configured
+    if (config.aap.url && config.aap.token) {
+      try {
+        const headers = { Authorization: `Bearer ${config.aap.token}` };
+        const baseUrl = config.aap.url.replace(/\/$/, ''); // Remove trailing slash
+
+        // Fetch Job Status Summary
+        const jobsResponse = await axios.get(`${baseUrl}/api/v2/unified_jobs/?order_by=-created&page_size=100`, { headers });
+        const jobs = jobsResponse.data.results;
+        
+        let success = 0, failed = 0, canceled = 0, running = 0;
+        jobs.forEach((job: any) => {
+          if (job.status === 'successful') success++;
+          else if (job.status === 'failed' || job.status === 'error') failed++;
+          else if (job.status === 'canceled') canceled++;
+          else running++;
+        });
+        
+        setAapJobsStatus([
+          { x: 'Successful', y: success },
+          { x: 'Failed', y: failed },
+          { x: 'Canceled', y: canceled },
+          { x: 'Running', y: running }
+        ]);
+        setAapTotalJobs(jobsResponse.data.count);
+
+        // Fetch Hosts Summary
+        const hostsResponse = await axios.get(`${baseUrl}/api/v2/hosts/?page_size=1`, { headers });
+        const totalHosts = hostsResponse.data.count;
+        
+        const failedHostsResponse = await axios.get(`${baseUrl}/api/v2/hosts/?has_active_failures=true&page_size=1`, { headers });
+        const failedHosts = failedHostsResponse.data.count;
+        
+        setAapHosts([
+          { name: 'Hosts', x: 'Total Managed', y: totalHosts },
+          { name: 'Hosts', x: 'Failed', y: failedHosts }
+        ]);
+
+        // Format Recent Jobs for the Table
+        const recent = jobs.slice(0, 5).map((job: any) => ({
+          id: job.id.toString(),
+          name: job.name,
+          status: job.status,
+          time: new Date(job.created).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
+        setAapRecentJobs(recent);
+
+      } catch (error) {
+        console.error("Failed to fetch live AAP data. Falling back to mock data.", error);
+      }
+    }
+
+    setLastRefreshed(new Date().toLocaleTimeString());
+    setIsRefreshing(false);
+  }, [config.aap.url, config.aap.token]);
 
   // Set up auto-refresh
   useEffect(() => {
@@ -230,10 +287,10 @@ const Dashboard = () => {
           <Grid hasGutter>
             <GridItem span={12} md={4}>
               <Card style={{ height: '100%' }}>
-                <CardTitle>Job Run Status (24h)</CardTitle>
+                <CardTitle>Job Run Status (Last 100)</CardTitle>
                 <CardBody>
                   <div style={{ height: '250px', width: '100%' }}>
-                    <ChartDonut themeColor={ChartThemeColor.multiOrdered} themeVariant="dark" ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobStatusData} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title="480" width={400} />
+                    <ChartDonut themeColor={ChartThemeColor.multiOrdered} themeVariant="dark" ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobsStatus} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title={aapTotalJobs.toString()} width={400} />
                   </div>
                 </CardBody>
               </Card>
@@ -247,7 +304,7 @@ const Dashboard = () => {
                     <Chart themeColor={ChartThemeColor.blue} themeVariant="dark" ariaDesc="Host status" ariaTitle="Hosts" domainPadding={{ x: [30, 25] }} height={250} padding={{ bottom: 50, left: 50, right: 20, top: 20 }} width={400}>
                       <ChartAxis />
                       <ChartAxis dependentAxis showGrid />
-                      <ChartBar data={aapHostData} labels={({ datum }) => datum.y} />
+                      <ChartBar data={aapHosts} labels={({ datum }) => datum.y} />
                     </Chart>
                   </div>
                 </CardBody>
@@ -267,7 +324,7 @@ const Dashboard = () => {
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {recentJobs.map(job => (
+                      {aapRecentJobs.map((job: any) => (
                         <Tr key={job.id}>
                           <Td>{getStatusIcon(job.status)}</Td>
                           <Td><a href={`#job-${job.id}`}>{job.name}</a></Td>
