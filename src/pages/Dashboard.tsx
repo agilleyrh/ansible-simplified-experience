@@ -177,17 +177,27 @@ const Dashboard = () => {
         ]);
         setAapTotalJobs(jobsResponse.data.count);
 
-        // Fetch Hosts Summary
-        const hostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?page_size=1`, { headers });
-        const totalHosts = hostsResponse.data.count;
-        
-        const failedHostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?has_active_failures=true&page_size=1`, { headers });
-        const failedHosts = failedHostsResponse.data.count;
-        
-        setAapHosts([
-          { name: 'Hosts', x: 'Total Managed', y: totalHosts },
-          { name: 'Hosts', x: 'Failed', y: failedHosts }
-        ]);
+        // Fetch Hosts Summary (Some AAP API endpoints don't support has_active_failures natively, catch specific API errors here)
+        try {
+          const hostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?page_size=1`, { headers });
+          const totalHosts = hostsResponse.data.count;
+          
+          let failedHosts = 0;
+          try {
+            // Some newer AAP versions have replaced 'has_active_failures' flag logic
+            const failedHostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?has_active_failures=true&page_size=1`, { headers });
+            failedHosts = failedHostsResponse.data.count;
+          } catch (err) {
+            console.warn("Could not fetch active failures filter, falling back to 0", err);
+          }
+
+          setAapHosts([
+            { name: 'Hosts', x: 'Total Managed', y: totalHosts },
+            { name: 'Hosts', x: 'Failed', y: failedHosts }
+          ]);
+        } catch (err) {
+          console.warn("Could not fetch host inventory metrics.", err);
+        }
 
         // Format Recent Jobs for the Table
         const recent = jobs.slice(0, 5).map((job: any) => ({
