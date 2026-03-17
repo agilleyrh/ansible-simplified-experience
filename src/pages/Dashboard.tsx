@@ -25,7 +25,6 @@ import {
   ChartGroup,
   ChartLine,
   ChartThemeColor,
-  ChartThemeVariant,
   ChartDonut,
   ChartVoronoiContainer,
   ChartBar
@@ -36,9 +35,9 @@ import { defaultConfig } from './Settings';
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'successful': return <CheckCircleIcon style={{ color: 'var(--pf-v6-global--success-color--100)' }} />;
-    case 'failed': return <ExclamationCircleIcon style={{ color: 'var(--pf-v6-global--danger-color--100)' }} />;
-    default: return <InfoCircleIcon style={{ color: 'var(--pf-v6-global--info-color--100)' }} />;
+    case 'successful': return <CheckCircleIcon style={{ color: 'var(--pf-t--global--icon--color--status--success--default)' }} />;
+    case 'failed': return <ExclamationCircleIcon style={{ color: 'var(--pf-t--global--icon--color--status--danger--default)' }} />;
+    default: return <InfoCircleIcon style={{ color: 'var(--pf-t--global--icon--color--status--info--default)' }} />;
   }
 };
 
@@ -234,7 +233,7 @@ const Dashboard = () => {
                 <CardTitle>Job Run Status (24h)</CardTitle>
                 <CardBody>
                   <div style={{ height: '250px', width: '100%' }}>
-                    <ChartDonut themeVariant="dark" ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobStatusData} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title="480" themeColor={ChartThemeColor.multiOrdered} />
+                    <ChartDonut themeColor={ChartThemeColor.multiOrdered} themeVariant="dark" ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobStatusData} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title="480" width={400} />
                   </div>
                 </CardBody>
               </Card>
@@ -245,7 +244,7 @@ const Dashboard = () => {
                 <CardTitle>Host Inventory Health</CardTitle>
                 <CardBody>
                   <div style={{ height: '250px', width: '100%' }}>
-                    <Chart themeVariant="dark" ariaDesc="Host status" ariaTitle="Hosts" domainPadding={{ x: [30, 25] }} height={250} padding={{ bottom: 50, left: 50, right: 20, top: 20 }} themeColor={ChartThemeColor.blue}>
+                    <Chart themeColor={ChartThemeColor.blue} themeVariant="dark" ariaDesc="Host status" ariaTitle="Hosts" domainPadding={{ x: [30, 25] }} height={250} padding={{ bottom: 50, left: 50, right: 20, top: 20 }} width={400}>
                       <ChartAxis />
                       <ChartAxis dependentAxis showGrid />
                       <ChartBar data={aapHostData} labels={({ datum }) => datum.y} />
@@ -296,6 +295,7 @@ const Dashboard = () => {
                 <CardBody>
                   <div style={{ height: '300px', width: '100%' }}>
                     <Chart
+                      themeColor={ChartThemeColor.blue}
                       themeVariant="dark"
                       ariaDesc="OpenShift Cluster CPU, Memory, and Network Usage"
                       ariaTitle="OpenShift Performance"
@@ -304,10 +304,10 @@ const Dashboard = () => {
                       legendOrientation="horizontal"
                       legendPosition="bottom"
                       height={275}
+                      width={800}
                       padding={{ bottom: 50, left: 50, right: 20, top: 20 }}
                       maxDomain={{y: 100}}
                       minDomain={{y: 0}}
-                      themeColor={ChartThemeColor.blue}
                     >
                       <ChartAxis />
                       <ChartAxis dependentAxis showGrid tickValues={[0, 25, 50, 75, 100]} tickFormat={(x) => `${x}%`} />
@@ -327,7 +327,7 @@ const Dashboard = () => {
                 <CardTitle>Pod Status Distribution</CardTitle>
                 <CardBody>
                   <div style={{ height: '300px', width: '100%' }}>
-                    <ChartDonut themeVariant="dark" ariaDesc="Pod Status" ariaTitle="Pods" constrainToVisibleArea data={osPodStatus} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Pods" title="1595" themeColor={ChartThemeColor.green} />
+                    <ChartDonut themeColor={ChartThemeColor.green} themeVariant="dark" ariaDesc="Pod Status" ariaTitle="Pods" constrainToVisibleArea data={osPodStatus} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Pods" title="1595" width={400} />
                   </div>
                 </CardBody>
               </Card>
