@@ -9,10 +9,10 @@ app.use(cors());
 
 // The proxy endpoint interceptor
 app.use('/proxy', (req, res, next) => {
-  const target = req.query.target;
+  const target = req.headers['x-target-url'];
   
   if (!target) {
-    return res.status(400).send('Target URL query parameter is required');
+    return res.status(400).send('x-target-url header is required');
   }
 
   // Create the proxy middleware dynamically based on the target

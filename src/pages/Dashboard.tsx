@@ -140,17 +140,22 @@ const Dashboard = () => {
     // Fetch live AAP data if configured
     if (config.aap.url && config.aap.token) {
       try {
-        const headers = { Authorization: `Bearer ${config.aap.token}` };
         let baseUrl = config.aap.url.replace(/\/$/, ''); // Remove trailing slash
         
         // Strip out the API path if the user included it in their base URL
         baseUrl = baseUrl.replace(/\/api\/v2$/, '').replace(/\/api\/controller\/v2$/, '');
         
+        // Set the auth token and dynamic target URL header for the local proxy server
+        const headers = { 
+          Authorization: `Bearer ${config.aap.token}`,
+          'x-target-url': baseUrl 
+        };
+        
         // If the URL contains /api/controller, we need to prefix our API calls with it
         const apiPrefix = config.aap.url.includes('/api/controller') ? '/api/controller/v2' : '/api/v2';
         
         // Proxy URL
-        const proxyUrl = `http://localhost:3001/proxy?target=${encodeURIComponent(baseUrl)}`;
+        const proxyUrl = `http://localhost:3001/proxy`;
 
         // Fetch Job Status Summary
         const jobsResponse = await axios.get(`${proxyUrl}${apiPrefix}/unified_jobs/?order_by=-created&page_size=100`, { headers });
