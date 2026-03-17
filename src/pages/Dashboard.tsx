@@ -141,13 +141,19 @@ const Dashboard = () => {
     if (config.aap.url && config.aap.token) {
       try {
         const headers = { Authorization: `Bearer ${config.aap.token}` };
-        const baseUrl = config.aap.url.replace(/\/$/, ''); // Remove trailing slash
+        let baseUrl = config.aap.url.replace(/\/$/, ''); // Remove trailing slash
+        
+        // Strip out the API path if the user included it in their base URL
+        baseUrl = baseUrl.replace(/\/api\/v2$/, '').replace(/\/api\/controller\/v2$/, '');
+        
+        // If the URL contains /api/controller, we need to prefix our API calls with it
+        const apiPrefix = config.aap.url.includes('/api/controller') ? '/api/controller/v2' : '/api/v2';
         
         // Proxy URL
         const proxyUrl = `http://localhost:3001/proxy?target=${encodeURIComponent(baseUrl)}`;
 
         // Fetch Job Status Summary
-        const jobsResponse = await axios.get(`${proxyUrl}/api/v2/unified_jobs/?order_by=-created&page_size=100`, { headers });
+        const jobsResponse = await axios.get(`${proxyUrl}${apiPrefix}/unified_jobs/?order_by=-created&page_size=100`, { headers });
         const jobs = jobsResponse.data.results;
         
         let success = 0, failed = 0, canceled = 0, running = 0;
@@ -167,10 +173,10 @@ const Dashboard = () => {
         setAapTotalJobs(jobsResponse.data.count);
 
         // Fetch Hosts Summary
-        const hostsResponse = await axios.get(`${proxyUrl}/api/v2/hosts/?page_size=1`, { headers });
+        const hostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?page_size=1`, { headers });
         const totalHosts = hostsResponse.data.count;
         
-        const failedHostsResponse = await axios.get(`${proxyUrl}/api/v2/hosts/?has_active_failures=true&page_size=1`, { headers });
+        const failedHostsResponse = await axios.get(`${proxyUrl}${apiPrefix}/hosts/?has_active_failures=true&page_size=1`, { headers });
         const failedHosts = failedHostsResponse.data.count;
         
         setAapHosts([
