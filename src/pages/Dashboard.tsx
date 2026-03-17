@@ -25,6 +25,7 @@ import {
   ChartGroup,
   ChartLine,
   ChartThemeColor,
+  ChartThemeVariant,
   ChartDonut,
   ChartVoronoiContainer,
   ChartBar
@@ -233,7 +234,7 @@ const Dashboard = () => {
                 <CardTitle>Job Run Status (24h)</CardTitle>
                 <CardBody>
                   <div style={{ height: '250px', width: '100%' }}>
-                    <ChartDonut ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobStatusData} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title="480" themeColor={ChartThemeColor.multiOrdered} />
+                    <ChartDonut themeVariant="dark" ariaDesc="AAP Job Status" ariaTitle="AAP Jobs" constrainToVisibleArea data={aapJobStatusData} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Jobs" title="480" themeColor={ChartThemeColor.multiOrdered} />
                   </div>
                 </CardBody>
               </Card>
@@ -244,7 +245,7 @@ const Dashboard = () => {
                 <CardTitle>Host Inventory Health</CardTitle>
                 <CardBody>
                   <div style={{ height: '250px', width: '100%' }}>
-                    <Chart ariaDesc="Host status" ariaTitle="Hosts" domainPadding={{ x: [30, 25] }} height={250} padding={{ bottom: 50, left: 50, right: 20, top: 20 }} themeColor={ChartThemeColor.blue}>
+                    <Chart themeVariant="dark" ariaDesc="Host status" ariaTitle="Hosts" domainPadding={{ x: [30, 25] }} height={250} padding={{ bottom: 50, left: 50, right: 20, top: 20 }} themeColor={ChartThemeColor.blue}>
                       <ChartAxis />
                       <ChartAxis dependentAxis showGrid />
                       <ChartBar data={aapHostData} labels={({ datum }) => datum.y} />
@@ -295,6 +296,7 @@ const Dashboard = () => {
                 <CardBody>
                   <div style={{ height: '300px', width: '100%' }}>
                     <Chart
+                      themeVariant="dark"
                       ariaDesc="OpenShift Cluster CPU, Memory, and Network Usage"
                       ariaTitle="OpenShift Performance"
                       containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}%`} constrainToVisibleArea />}
@@ -325,7 +327,7 @@ const Dashboard = () => {
                 <CardTitle>Pod Status Distribution</CardTitle>
                 <CardBody>
                   <div style={{ height: '300px', width: '100%' }}>
-                    <ChartDonut ariaDesc="Pod Status" ariaTitle="Pods" constrainToVisibleArea data={osPodStatus} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Pods" title="1595" themeColor={ChartThemeColor.green} />
+                    <ChartDonut themeVariant="dark" ariaDesc="Pod Status" ariaTitle="Pods" constrainToVisibleArea data={osPodStatus} labels={({ datum }) => `${datum.x}: ${datum.y}`} padding={{ bottom: 20, left: 20, right: 20, top: 20 }} subTitle="Total Pods" title="1595" themeColor={ChartThemeColor.green} />
                   </div>
                 </CardBody>
               </Card>
